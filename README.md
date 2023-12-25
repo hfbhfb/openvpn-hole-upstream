@@ -46,5 +46,6 @@ genclientkey "client1" "default" "openvpn1"
    - 通过sidecar的方式配置nginx的容器进行upstream指向
 
 2. 需要把helm包做一些改造，增加sidecar的逻辑
+   - helm repo add myhole-openvpn https://hfbhfb.github.io/openvpn-hole-upstream/ # 加入仓库
 
 
