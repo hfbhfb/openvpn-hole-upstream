@@ -1,0 +1,40 @@
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: nginxsidecar-jump-self
+  name: nginxsideca-jump-self
+spec:
+  ports:
+  - name: http
+    port: 80
+    protocol: TCP
+  selector:
+    app: openvpn
+  type: ClusterIP
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  labels:
+    component: "cm-nginxsidecar"
+    app: cm-nginxsidecar
+  name: cm-nginxsidecar
+data:
+  nginx.conf: |
+
+    worker_processes 1;
+    worker_rlimit_nofile 8192;
+    events {
+        worker_connections 1024;
+    }
+
+    stream {
+        upstream backend {
+            server 10.240.0.6:80;
+        }
+        server {
+            listen 80;
+            proxy_pass backend;
+        }
+    }

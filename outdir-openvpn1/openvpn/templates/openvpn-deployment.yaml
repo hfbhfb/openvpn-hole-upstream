@@ -1,0 +1,101 @@
+---
+# Source: openvpn/templates/openvpn-deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: openvpn1
+  labels:
+    app: openvpn
+    chart: openvpn-0.0.1
+    release: openvpn1
+    heritage: Helm
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: openvpn
+      release: openvpn1
+  template:
+    metadata:
+      labels:
+        app: openvpn
+        release: openvpn1
+      annotations:
+        checksum/config: e755d37172095c9233969515f4bdd627e7b0dfe29ec40cc0d615746254c7e5d5
+    spec:
+      initContainers:
+        - args:
+            - -c
+            - sysctl -w net.ipv4.ip_forward=1
+          command:
+            - /bin/sh
+          image: busybox:1.29
+          imagePullPolicy: IfNotPresent
+          name: sysctl
+          resources:
+            requests:
+              cpu: 1m
+              memory: 1Mi
+          securityContext:
+            privileged: true
+      containers:
+      - name: openvpn
+        image: "jfelten/openvpn-docker:1.1.0"
+        imagePullPolicy: IfNotPresent
+        command: ["/etc/openvpn/setup/configure.sh"]
+        ports:
+        - containerPort: 443
+          name: openvpn
+        securityContext:
+          capabilities:
+            add:
+              - NET_ADMIN
+        readinessProbe:
+          initialDelaySeconds: 5
+          periodSeconds: 5
+          successThreshold: 2
+          exec:
+            command:
+            - nc
+            - -u
+            - -z
+            - 127.0.0.1
+            - "443"
+        resources:
+          requests:
+            cpu: "300m"
+            memory: "128Mi"
+          limits:
+            cpu: "300m"
+            memory: "128Mi"
+        volumeMounts:
+          - mountPath: /etc/openvpn/setup
+            name: openvpn
+            readOnly: false
+          - mountPath: /etc/openvpn/certs
+            name: certs
+            readOnly: false
+      - image: nginx:1.25.1-perl #原来是 nginx:1.14.2
+        name: nginxsidecar
+        resources:
+          requests:
+            cpu: 102m
+            memory: 100Mi
+          limits:
+            cpu: 501m
+            memory: 501Mi
+        volumeMounts:
+          - name: cm-nginxsidecar
+            mountPath: /etc/nginx/nginx.conf
+            subPath: nginx.conf
+      volumes:
+      - name: cm-nginxsidecar
+        configMap:
+          name: cm-nginxsidecar
+      - name: openvpn
+        configMap:
+          name: openvpn1
+          defaultMode: 0775
+      - name: certs
+        persistentVolumeClaim:
+          claimName: openvpn1

@@ -1,0 +1,18 @@
+---
+# Source: openvpn/templates/certs-pvc.yaml
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: openvpn1
+  labels:
+    app: openvpn
+    chart: openvpn-4.2.5
+    release: openvpn1
+    heritage: Helm
+spec:
+  accessModes:
+    - "ReadWriteOnce"
+  resources:
+    requests:
+      storage: "2M"
+  storageClassName: "mylocalsc1"

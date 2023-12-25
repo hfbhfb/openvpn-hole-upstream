@@ -1,0 +1,22 @@
+---
+# Source: openvpn/templates/openvpn-service.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: openvpn1
+  labels:
+    app: openvpn
+    chart: openvpn-0.0.1
+    release: openvpn1
+    heritage: Helm
+spec:
+  ports:
+    - name: openvpn
+      port: 443
+      targetPort: 443
+      protocol: UDP
+      nodePort: 30336
+  selector:
+    app: openvpn
+    release: openvpn1
+  type: NodePort

@@ -1,0 +1,87 @@
+
+replicaCount: 1
+updateStrategy: {}
+imagePullSecretName:
+image:
+  repository: jfelten/openvpn-docker
+  tag: 1.1.0
+  pullPolicy: IfNotPresent
+service:
+  type: NodePort
+  #externalPort: 443
+  #internalPort: 443
+  # hostPort: 443
+  externalIPs: []
+  nodePort: 30336
+  # clusterIP: None
+  # LoadBalancerSourceRanges: 0.0.0.0/0
+  # loadBalancerIP: 10.0.0.1
+
+  ## Here annotations can be added to the openvpn service
+  # annotations:
+  #   external-dns.alpha.kubernetes.io/hostname: vpn.example.com
+  annotations: {}
+## Here annotations can be added to the openvpn pod
+# podAnnotations:
+#   backup.ark.heptio.com/backup-volumes: certs
+podAnnotations: {}
+
+# Add privileged init container to enable IPv4 forwarding
+ipForwardInitContainer: true
+
+resources:
+  limits:
+    cpu: 300m
+    memory: 128Mi
+  requests:
+    cpu: 300m
+    memory: 128Mi
+
+readinessProbe:
+  initialDelaySeconds: 5
+  periodSeconds: 5
+  successThreshold: 2
+
+persistence:
+  enabled: true
+
+  # storageClass: "nfs-client"
+  storageClass: "mylocalsc1"
+  accessMode: ReadWriteOnce
+  existingClaim: "openvpn1"
+  size: 2M
+openvpn:
+  # Network allocated for openvpn clients (default: 10.240.0.0).
+  OVPN_NETWORK: 10.240.0.0
+  # Network subnet allocated for openvpn client (default: 255.255.0.0).
+  OVPN_SUBNET: 255.255.0.0
+  # Protocol used by openvpn tcp or udp (default: udp).
+  OVPN_PROTO: udp
+  OVPN_K8S_POD_NETWORK: "10.0.0.0" #k8s pod地址
+  OVPN_K8S_POD_SUBNET: "255.255.0.0"
+  OVPN_K8S_SVC_NETWORK: "10.247.0.0"    #k8s svc地址
+  OVPN_K8S_SVC_SUBNET: "255.255.0.0"
+
+  DEFAULT_ROUTE_ENABLED: true
+
+  dhcpOptionDomain: true
+  # Redirect all client traffic through VPN
+  redirectGateway: true
+
+  useCrl: true # 说是设置为false的话无法注销用户
+  taKey: true
+  cipher: AES-256-CBC
+  istio:
+    enabled: false
+    proxy:
+      port: 15001
+  iptablesExtra: []
+
+  ccd:
+    enabled: false
+    config: {}
+
+nodeSelector: {}
+tolerations: []
+
+nginxsidecar: true
