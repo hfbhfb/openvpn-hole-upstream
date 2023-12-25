@@ -5,6 +5,12 @@ https://github.com/nangongchengfeng/Kubernetes_Openvpn
 
 
 
+### 效果图
+
+<img src="imgdir/image-20231225155643323.png" alt="image-20231225155643323" style="zoom:50%;" />
+
+
+
 ## 基本使用
 ```bash
 
